@@ -1,82 +1,155 @@
 
+// ----------- Session and break time ------------
 const sessionTime = document.querySelector(".session");
-const incSession = document.querySelector(".increaseSession");
-const decSession = document.querySelector(".decreaseSession");
-
-incSession.addEventListener('click',changeSession);
-decSession.addEventListener('click', changeSession);
+const moreSession = document.querySelector(".increaseSession");
+const lessSession = document.querySelector(".decreaseSession");
 
 const breakTime = document.querySelector(".break");
-const incBreak = document.querySelector(".increaseBreak");
-const decBreak = document.querySelector(".decreaseBreak");
+const moreBreak = document.querySelector(".increaseBreak");
+const lessBreak = document.querySelector(".decreaseBreak");
+// -----------------------------------------------
 
-incBreak.addEventListener('click', changeBreak);
-decBreak.addEventListener('click', changeBreak);
 
+// ----------- Control buttons and display -------
 const start = document.querySelector(".start");
 const pause = document.querySelector(".pause");
 const reset = document.querySelector(".reset");
+const display = document.querySelector(".display");
+// -----------------------------------------------
 
-const minutes = document.querySelector(".minutes");
-const seconds = document.querySelector(".seconds");
-
+// ----------- Variables and states -------
 let minutesSession = 25;
-
 let minutesBreak = 5;
-
+let seconds = 60;
+let paused = false;
 let session = true;
+let id = 0;
+let firstStart = true;
+let savedSes;
+let savedBreak;
+// -----------------------------------------------
 
+// ----------Event listeners---------------------
 start.addEventListener('click',startTimer);
 pause.addEventListener('click',pauseTimer);
 reset.addEventListener('click',resetTimer);
 
+moreSession.addEventListener('click', incSession);
+lessSession.addEventListener('click', decSession);
+moreBreak.addEventListener('click', incBreak);
+lessBreak.addEventListener('click', decBreak);
+// -----------------------------------------------
 
-
-
-function changeSession(e){
-     if (e.target.getAttribute('data-value') === "+"){
-         if(minutesSession<60){
-             minutesSession++;
-             sessionTime.innerHTML = `${minutesSession}`;
-         }
-     } else{
-         if (minutesSession > 1) {
-             minutesSession--;
-             sessionTime.innerHTML = `${minutesSession}`;
-         }
-     }
-     if(session){
-         minutes.innerHTML = `${minutesSession}`;
-     }
-}
-
-function changeBreak(e){
+function startTimer(e){
     
-    if (e.target.getAttribute('data-value') === "+") {
-        if (minutesBreak < 15) {
-            minutesBreak++;
-            breakTime.innerHTML = `${minutesBreak}`;
-        }
-    } else {
-        if (minutesBreak > 1) {
-            minutesBreak--;
-            breakTime.innerHTML = `${minutesBreak}`;
-        }
+    savedSes = minutesSession;
+    savedBreak = minutesBreak;
+    if (firstStart) {
+        minutesSession--;
+        minutesBreak--;
+        firstStart = false;
     }
-
-    if (!session) {
-        minutes.innerHTML = `${minutesBreak}`;
-    }
-
+    id = setInterval(function () {
+        if(session){
+            decrementTime(minutesSession);
+            displayTime(minutesSession, seconds);
+            inSession(minutesSession);
+        } else {
+            decrementTime(minutesBreak);
+            displayTime(minutesBreak, seconds);
+            inBreak(minutesBreak);
+        }
+    }, 1000);
 }
 
-function resetTimer(e){
+function pauseTimer(e){
+    window.clearInterval(id);
+}
+
+function resetTimer(e) {
     minutesSession = 25;
     minutesBreak = 5;
-    sessionTime.innerHTML = `${minutesSession}`;
-    breakTime.innerHTML = `${minutesBreak}`;
+    seconds = 60;
     session = true;
-    minutes.innerHTML = `${minutesSession}`;
-    seconds.innerHTML = '00';
-
+    paused = false;
+    changeButtonLabels();
+    window.clearInterval(id);
 }
+
+
+function decrementTime(minutes){
+    seconds --;
+    if (seconds == 0){
+        minutes--;
+        seconds = 5;
+        if(minutesSession == 0 ){
+            session = !session;
+        }
+    }
+}
+
+function inBreak(minutes){
+    console.log('inside inBreak');
+    minutes = parseInt(minutes);
+    seconds = parseInt(seconds);
+    if (minutes == 0 && seconds == 0) {
+        minutesBreak = savedBreak;
+        seconds = 60;
+        session = !session;
+    }
+}
+
+function inSession(minutes){
+    if(minutes == 0 && seconds == 0){
+        minutesSession = savedSes;
+        seconds = 60;
+        session = !session;
+    }
+}
+
+function convertToString(num){
+    if (num < 10) {
+        num = '0'+num;
+    }
+    return num;
+}
+
+function displayTime(min,sec){
+    display.innerHTML = `${convertToString(min)} : ${convertToString(sec)}`;
+}
+
+//----------- Functions for updating buttons and labels------
+function changeButtonLabels(){
+    sessionTime.innerHTML = convertToString(minutesSession);
+    breakTime.innerHTML = convertToString(minutesBreak);
+    displayTime(minutesSession,0);
+}
+
+function decSession(e){
+    if (minutesSession > 1) minutesSession--;
+    changeButtonLabels()
+};
+function incSession (e){
+    if (minutesSession < 60) minutesSession++;
+    changeButtonLabels()
+};
+function decBreak(e) {
+    if (minutesBreak > 1) minutesBreak--;
+    changeButtonLabels()
+    
+};
+function incBreak(e) {
+    if (minutesBreak < 60) minutesBreak++;
+    changeButtonLabels()
+};
+//------------------------------------------------------------------
+
+
+
+
+
+
+
+
+
+
